@@ -3,13 +3,38 @@ import "firebase/firestore";
 import "firebase/auth";
 
 const config = {
-  apiKey: "AIzaSyBy9WJyXQPHQCmMxmzskyRCt6N0IxrsHJc",
+  apiKey: process.env.REACT_APP_API_KEY,
   authDomain: "e-commerce-db-2cae0.firebaseapp.com",
   projectId: "e-commerce-db-2cae0",
   storageBucket: "e-commerce-db-2cae0.appspot.com",
   messagingSenderId: "307363476793",
-  appId: "1:307363476793:web:609b5f98bdeba85171e4e8",
+  appId: process.env.REACT_APP_API_ID,
   measurementId: "G-4DSLNC9LK8",
+};
+
+export const createUserProfileDocument = async (userAuth, additionalData) => {
+  if (!userAuth) return;
+
+  const userRef = firebase.doc(`user/${userAuth.uid}`);
+
+  const snapShot = await userRef.get();
+
+  if (!snapShot.exists) {
+    const { displayName, email } = userAuth;
+    const createdAt = new Date();
+
+    try {
+      await userRef.set({
+        displayName,
+        email,
+        createdAt,
+        ...additionalData,
+      });
+    } catch (error) {
+      console.log("error creating user", error.message);
+    }
+  }
+  return userRef;
 };
 
 firebase.initializeApp(config);
